@@ -1,0 +1,31 @@
+{
+  "machineLearning": {
+    "enabled": false
+  },
+  "library": {
+    "scan": {
+      "enabled": true,
+      "cronExpression": "0 */6 * * *"
+    },
+    "watch": {
+      "enabled": false
+    }
+  },
+  "job": {
+    "thumbnailGeneration": {
+      "concurrency": 2
+    },
+    "metadataExtraction": {
+      "concurrency": 2
+    },
+    "library": {
+      "concurrency": 2
+    },
+    "videoConversion": {
+      "concurrency": 1
+    }
+  },
+  "newVersionCheck": {
+    "enabled": true
+  }
+}

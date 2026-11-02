@@ -1,0 +1,13 @@
+# ~/.config/rclone/rclone.conf（権限 600）にコピーしてキーを記入する。
+# このファイルの実物は Git に入れない。
+[s3backup]
+type = s3
+provider = AWS
+access_key_id = <nas-backup ユーザーのアクセスキー>
+secret_access_key = <シークレットキー>
+region = ap-southeast-2
+location_constraint = ap-southeast-2
+storage_class = DEEP_ARCHIVE
+server_side_encryption = AES256
+# バケット作成権限を持たないため、存在確認をしない
+no_check_bucket = true

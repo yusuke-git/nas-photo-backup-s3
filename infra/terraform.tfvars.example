@@ -1,0 +1,5 @@
+# terraform.tfvars にコピーして編集する（terraform.tfvars は Git に入れない）
+bucket_name  = "example-nas-photo-backup-XXXX"
+budget_email = "you@example.com"
+# monthly_budget_usd = 5
+# aws_profile        = "nas-admin"

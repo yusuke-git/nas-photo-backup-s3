@@ -1,0 +1,9 @@
+# /etc/fstab に追記する。認証情報は /etc/nas-credentials（権限 600）に
+#   username=nas-pi
+#   password=<パスワード>
+# の形式で置く。つながらない場合は vers=1.0 を試す。
+# オプションの ro は read-only（読み取り専用）、rw は read-write（読み書き）
+# Photo: 元写真（ro = 読み取り専用）
+//<NASのIP>/Photo      /mnt/nas/photos      cifs  credentials=/etc/nas-credentials,vers=2.0,ro,iocharset=utf8,uid=pi,gid=pi,_netdev,nofail  0  0
+# Thumbnail: Immich のサムネイル（rw = 読み書き）
+//<NASのIP>/Thumbnail  /mnt/nas/thumbnail   cifs  credentials=/etc/nas-credentials,vers=2.0,rw,iocharset=utf8,uid=pi,gid=pi,file_mode=0644,dir_mode=0755,_netdev,nofail  0  0

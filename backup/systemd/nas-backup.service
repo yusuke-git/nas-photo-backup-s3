@@ -1,0 +1,11 @@
+[Unit]
+Description=NAS の写真を S3 Deep Archive にバックアップ
+Wants=network-online.target
+After=network-online.target remote-fs.target
+
+[Service]
+Type=oneshot
+User=pi
+ExecStart=/opt/nas-photo-backup/backup/backup.sh
+Nice=10
+IOSchedulingClass=idle

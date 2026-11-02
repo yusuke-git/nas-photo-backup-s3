@@ -1,0 +1,64 @@
+site_name: NAS 写真バックアップ
+site_description: Buffalo LS220D の写真を S3 Deep Archive にバックアップし、Immich で閲覧する
+repo_url: https://github.com/yusuke-git/nas-photo-backup-s3
+docs_dir: docs
+
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.sections
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/weather-night, name: ダークモード}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/weather-sunny, name: ライトモード}
+
+plugins:
+  - search:
+      lang: ja
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_if_no_docstring: false
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+validation:
+  anchors: warn            # リンク先の見出しがないと警告（--strict で失敗）
+  unrecognized_links: warn
+
+nav:
+  - はじめに:
+      - ホーム（読む順番）: index.md
+      - 用語集: glossary.md
+  - 仕様書: spec.md
+  - 導入手順:
+      - 1. AWS（Terraform）: setup-aws.md
+      - 2. バックアップ: setup-backup.md
+      - 3. Immich: setup-immich.md
+  - 仕組みの解説:
+      - Terraform（infra/）: infra.md
+      - backup.sh: backup-script.md
+  - 運用:
+      - 料金の見張りと設定変更: operations.md
+      - セキュリティ点検: security.md
+      - 構築記録: records.md
+  - 開発者向け:
+      - Agent Toolkit for AWS: setup-agent-toolkit.md
+      - ドキュメントの生成: docs-build.md

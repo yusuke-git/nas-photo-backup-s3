@@ -1,0 +1,14 @@
+rclone.conf
+*.credentials
+.env
+__pycache__/
+.venv/
+.pytest_cache/
+site/
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+tfplan
+terraform.tfvars
+.terraform.lock.hcl
