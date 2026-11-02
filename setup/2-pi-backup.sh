@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # ===== 設定（ここを書き換える） =====
-NAS_IP="<NASのIP>"                             # NAS の IP アドレス（例 192.168.1.20）
+NAS_IP="<NASのIP>"                             # NAS の IP アドレス（例 192.168.0.10）
 NAS_USER="nas-pi"                               # NAS に作ったラズパイ専用ユーザー
 NAS_PHOTO_SHARE="Photo"                         # 写真の共有フォルダ名（ラズパイからは読み取り専用）
 NAS_THUMB_SHARE="Thumbnail"                     # Immich のサムネイル用の共有フォルダ名（読み書き）

@@ -44,7 +44,7 @@ touch /mnt/nas/thumbnail/.write-test && rm /mnt/nas/thumbnail/.write-test   # �
 ssh-keygen -t ed25519 -f ~/.ssh/nas-photo-backup -N "" -C "raspi deploy key"
 cat ~/.ssh/nas-photo-backup.pub   # GitHub の Settings → Deploy keys に登録（Allow write access は付けない）
 sudo install -d -o pi -g pi /opt/nas-photo-backup
-GIT_SSH_COMMAND="ssh -i ~/.ssh/nas-photo-backup" git clone git@github.com:yusuke-git/nas-photo-backup.git /opt/nas-photo-backup
+GIT_SSH_COMMAND="ssh -i ~/.ssh/nas-photo-backup" git clone git@github.com:<user>/<repo>.git /opt/nas-photo-backup
 git -C /opt/nas-photo-backup config core.sshCommand "ssh -i ~/.ssh/nas-photo-backup"   # 以降の git pull も同じ鍵を使う
 ```
 
