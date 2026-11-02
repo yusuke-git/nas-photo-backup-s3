@@ -1,5 +1,8 @@
 # 導入手順 1. AWS（Terraform）
 
+!!! tip "スクリプトでまとめて実行する"
+    この手順は `setup/1-aws.ps1`（Windows）または `setup/1-aws.sh` でまとめて実行できる。[クイックスタート](quickstart.md) を参照。
+
 S3 バケット、IAM ユーザー、予算アラートを `infra/` の Terraform で作る。作業は手元の PC で行う。各リソースの中身は [Terraform の解説](infra.md)、設計の理由は [仕様書の 5〜6章](spec.md#s3) を参照。
 
 ## 作られるもの

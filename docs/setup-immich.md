@@ -1,5 +1,8 @@
 # 導入手順 3. Immich
 
+!!! tip "スクリプトでまとめて実行する"
+    この手順は `setup/3-pi-immich.sh` でまとめて実行できる。[クイックスタート](quickstart.md) を参照。
+
 ラズパイ（Raspberry Pi 4）で [Immich](https://immich.app/) を動かし、NAS の写真を外部ライブラリとして読み取り専用で取り込む。NAS のマウントは [導入手順 2 の「1. パッケージ」「2. NAS のマウント」](setup-backup.md#packages) を先に済ませておく。設計の理由は [仕様書の 8章](spec.md#immich) を参照。
 
 ## 0. 前提

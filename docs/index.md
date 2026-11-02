@@ -20,7 +20,8 @@ Buffalo LS220D2EE の写真を Raspberry Pi 4 経由で AWS S3 Glacier Deep Arch
 | 目的 | 読むページ |
 |---|---|
 | 何をどう作ったかを知る | [仕様書](spec.md) |
-| ゼロから組み立てる | [1. AWS](setup-aws.md) → [2. バックアップ](setup-backup.md) → [3. Immich](setup-immich.md) の順に進める |
+| スクリプトで手早く組み立てる | [クイックスタート](quickstart.md)（`setup/` の 3 本のスクリプト） |
+| ゼロから手順を追って組み立てる | [1. AWS](setup-aws.md) → [2. バックアップ](setup-backup.md) → [3. Immich](setup-immich.md) の順に進める |
 | 設定ファイルやスクリプトの中身を知る | [Terraform の解説](infra.md)、[backup.sh の解説](backup-script.md) |
 | 動かしたあとの見張り・トラブル対応 | [料金の見張りと設定変更](operations.md)、[セキュリティ点検](security.md) |
 | いつ何をしたかを確認する | [構築記録](records.md) |

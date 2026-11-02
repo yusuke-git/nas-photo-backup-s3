@@ -1,5 +1,8 @@
 # 導入手順 2. バックアップ
 
+!!! tip "スクリプトでまとめて実行する"
+    この手順は `setup/2-pi-backup.sh` でまとめて実行できる。[クイックスタート](quickstart.md) を参照。
+
 ラズパイ（Raspberry Pi OS）上で実行する。AWS 側の準備（バケットと IAM ユーザー、アクセスキー）は [導入手順 1. AWS](setup-aws.md) で先に済ませておく。`backup.sh` の中身は [backup.sh の解説](backup-script.md)、設計の理由は [仕様書の 4章と 7章](spec.md#nas-mount) を参照。
 
 ## 1. パッケージ {#packages}
@@ -41,7 +44,7 @@ touch /mnt/nas/thumbnail/.write-test && rm /mnt/nas/thumbnail/.write-test   # �
 ssh-keygen -t ed25519 -f ~/.ssh/nas-photo-backup -N "" -C "raspi deploy key"
 cat ~/.ssh/nas-photo-backup.pub   # GitHub の Settings → Deploy keys に登録（Allow write access は付けない）
 sudo install -d -o pi -g pi /opt/nas-photo-backup
-GIT_SSH_COMMAND="ssh -i ~/.ssh/nas-photo-backup" git clone git@github.com:<user>/<repo>.git /opt/nas-photo-backup
+GIT_SSH_COMMAND="ssh -i ~/.ssh/nas-photo-backup" git clone git@github.com:yusuke-git/nas-photo-backup.git /opt/nas-photo-backup
 git -C /opt/nas-photo-backup config core.sshCommand "ssh -i ~/.ssh/nas-photo-backup"   # 以降の git pull も同じ鍵を使う
 ```
 

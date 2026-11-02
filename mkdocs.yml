@@ -47,6 +47,7 @@ nav:
   - はじめに:
       - ホーム（読む順番）: index.md
       - 用語集: glossary.md
+      - クイックスタート（スクリプト）: quickstart.md
   - 仕様書: spec.md
   - 導入手順:
       - 1. AWS（Terraform）: setup-aws.md

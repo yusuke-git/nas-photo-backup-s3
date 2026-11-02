@@ -118,7 +118,7 @@
 - 主なオプション: `copy --immutable --size-only --s3-no-head`（削除・上書きなし、HEAD リクエストなし）
 - NAS 未マウント時は終了コード1で中止、二重起動は flock で防止
 - ログ: `/var/log/nas-backup/backup.log`（logrotate で週次、8世代）
-- セットアップ手順: [導入手順 2. バックアップ](setup-backup.md)
+- セットアップ手順: [導入手順 2. バックアップ](setup-backup.md)（スクリプト `setup/2-pi-backup.sh` でもできる。[クイックスタート](quickstart.md)）
 - スクリプトの解説: [backup.sh の解説](backup-script.md)
 
 ## 8. 写真の閲覧（Immich） {#immich}
@@ -141,7 +141,7 @@
 - 外部アクセス: Tailscale（自分の端末だけがつながる VPN）。HTTPS が必要なら `tailscale serve`
 - スマホからの自動アップロードは使わない（写真が NAS に入らず S3 にもバックアップされないため）
 - API: Immich 本体の API（[Immich API ドキュメント](https://api.immich.app/)）をそのまま使い、このリポジトリでは独自の API を持たない
-- セットアップ手順: [導入手順 3. Immich](setup-immich.md)
+- セットアップ手順: [導入手順 3. Immich](setup-immich.md)（スクリプト `setup/3-pi-immich.sh` でもできる）
 
 ## 9. 廃止した構成要素 {#removed}
 
