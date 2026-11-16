@@ -24,6 +24,8 @@
 | Immich | 元写真は `:ro` でマウント。Immich から消せない | `immich/docker-compose.yml` |
 | Immich | DB（PostgreSQL）と Redis はポートを公開していない | `immich/docker-compose.yml` |
 | Immich | ルーターのポートは開けず、外からは Tailscale だけ | [`docs/spec.md` 8章](spec.md#immich) |
+| Immich | Windows PC の機械学習コンテナ（認証なし）はプライベートネットワークだけで受け付ける。ラズパイの中継（`immich/ml-relay/`）は `docker0` でだけ待ち受け、LAN には出さない | [`docs/setup-remote-ml.md`](setup-remote-ml.md#security) |
+| Immich | イベントのアルバム用の API キーはフォルダ・アルバム（必要ならタグ、見張りモードならライブラリのスキャンとジョブの確認）の権限だけ。写真を消す権限は付けない。キーは `/etc/immich-event-tagger/tagger.env`（600）だけに置く | [導入手順 5](setup-event-tagger.md) |
 
 ランサムウェアで PC から NAS の写真が暗号化された場合も、S3 側は守られる。`--immutable` で上書きしないうえ、拡張子が変わったファイル（`.locked` など）はフィルターで対象外になるため。
 

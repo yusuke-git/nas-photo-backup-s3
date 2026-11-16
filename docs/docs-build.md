@@ -1,6 +1,6 @@
 # ドキュメントの生成
 
-このサイトは [MkDocs](https://www.mkdocs.org/)（Material テーマ）と [mkdocstrings](https://mkdocstrings.github.io/) で、`docs/*.md` から生成しています。現在このリポジトリに Python コードはありませんが、追加したときに docstring からコードリファレンスを作れるよう mkdocstrings を入れたままにしています。
+このサイトは [MkDocs](https://www.mkdocs.org/)（Material テーマ）と [mkdocstrings](https://mkdocstrings.github.io/) で、`docs/*.md` から生成しています。Python のコード（`immich/tagger/event_tagger.py`）は、docstring から [コードリファレンス](reference/event_tagger.md) を作っています。
 
 ## 手元で見る
 
