@@ -130,7 +130,7 @@
   - アルバム・お気に入りなどは Immich の DB にだけ保存される（NAS や S3 には入らない）
 - 新しい写真の取り込み: 6 時間ごとの自動スキャン（ネットワーク共有ではファイル監視が動かないため）
 - サーバー設定: `immich/immich-config.json` で Git 管理（画面からは変更できない）
-  - 機械学習（顔認識・スマート検索）は無効。機械学習コンテナは `ml` profile にして既定では起動しない
+  - 機械学習（顔検出・スマート検索・OCR）は有効。ただし処理は家の Windows PC の機械学習コンテナ（`immich/remote-ml/`）に任せ（Windows が止まっているときは Mac が予備で処理）、PC は固定 IP ではなく mDNS の名前（`.env` の `ML_PRIMARY_HOST` / `ML_BACKUP_HOST`）で探す。コンテナからは `.local` を引けないため、ラズパイ本体の中継（`immich/ml-relay/`、socat）を `host.docker.internal:3101` / `:3102` で呼ぶ。ラズパイの機械学習コンテナ（`ml` profile）は起動しない。PC が止まっている間は機械学習のジョブだけが失敗し、あとから「不足分」で再実行する。手順は [導入手順 4](setup-remote-ml.md)
   - ジョブの並列数を Pi4 向けに減らす
 - データの置き場所（ラズパイのローカルディスク、USB SSD 推奨）
   - `/srv/immich/library`: 動画変換、DB の自動ダンプ（`backups/`）など
@@ -142,6 +142,45 @@
 - スマホからの自動アップロードは使わない（写真が NAS に入らず S3 にもバックアップされないため）
 - API: Immich 本体の API（[Immich API ドキュメント](https://api.immich.app/)）をそのまま使い、このリポジトリでは独自の API を持たない
 - セットアップ手順: [導入手順 3. Immich](setup-immich.md)（スクリプト `setup/3-pi-immich.sh` でもできる）
+
+### イベントのアルバム {#event-tagger}
+
+- 目的: イベントフォルダ（`YYYY/MMDD_イベント名`、[3章](#nas-folders)）を、年の下 2 桁を付けたフォルダ名（`261003_運動会`）の Immich のアルバムにして、アルバム画面からイベントごとに見られるようにする
+- 実装: `immich/tagger/event_tagger.py`（Python 3、標準ライブラリだけ）。設定は `/etc/immich-event-tagger/tagger.env`
+- 実行場所: ラズパイの上（`python3`）。Immich には `http://localhost:2283` でつなぐ。Docker のコンテナは増やさない
+- 実行: systemd timer（`immich/tagger/systemd/immich-event-tagger.timer`）で、外部ライブラリの自動スキャン（6 時間ごと）の 30 分後に 1 日 4 回（0:30・6:30・12:30・18:30）。Immich には取り込み直後に外部のスクリプトを呼ぶしくみがないため、スキャンの時刻に合わせる（v3 のワークフロー機能は Immich のプラグインしか動かせない）。手で何度実行してもよい
+- 見張りモード（`--watch`、`immich/tagger/systemd/immich-event-watch.service`）: ほぼリアルタイムにアルバムへ入れるため、常に動かしておく
+  - 1 分ごと（`WATCH_INTERVAL`）に、ラズパイから見た NAS の写真のフォルダ（`/mnt/nas/photos`、読み取り専用）の下の全フォルダの更新時刻を集めて前回と比べる。ファイルは 1 枚ずつ見ない
+  - 変化があれば、更新時刻が 1 回分止まる（コピーが終わる）まで待ってから、`POST /libraries/{id}/scan` で外部ライブラリのスキャンを頼み、`GET /queues/library`（古い版は `GET /jobs`）でライブラリのジョブがなくなるまで待つ（最長 `SCAN_TIMEOUT` 秒）
+  - そのあと、変わったフォルダだけを `GET /view/folder` で取り直してアルバムに入れる（差分の処理）
+  - スキャンを頼む API は管理者だけなので、見張りモードの API キーは管理者（かつ外部ライブラリの所有者）のアカウントで作る
+  - 全体の実行と見張りモードは `flock`（`LOCK_FILE`）で同時に書き込まない。同じ名前のアルバムが 2 つできるのを防ぐため
+  - 見張りモードが止まっていた間の変化や、スキャンが時間内に終わらなかった分は、1 日 4 回の全体の実行で入る
+- 付け方
+  - 既定はアルバム（`MODE=album`）。名前は年の下 2 桁＋フォルダ名（`2026/1003_運動会` → `261003_運動会`、`ALBUM_FORMAT={yy}{folder}`）。別の年に同じフォルダ名があってもアルバムが分かれる。サブフォルダの写真は親のイベントのアルバムに入る
+  - 同じ名前のアルバムが自分のアカウントにあればそれに足す。アルバムには足すだけで、外さない。アルバムは自動では消さない
+  - 設定（`MODE=tag` / `both`）でタグ `イベント/{年}/{MMDD_イベント名}`（`/` で階層になる）も付けられる。タグはいったん既定にしたが、見づらいため既定をアルバムに変えた
+  - 規則に合わないフォルダ・隠しフォルダ・ゴミ箱の写真は対象外。`EXCLUDE` で特定のイベント名（`日常` など）を外せる
+  - ファイル名は Unicode の NFC にそろえて比べる（NAS 経由で濁点が分かれていても同じアルバムになる）
+- 冪等: 入っている写真・付いているタグは Immich が `duplicate` を返すので、件数だけ数える。新しい写真の分だけが増える
+- 名前の変更: 外部ライブラリでは写真はパスで区別されるため、フォルダ名を変えると新しい名前のアルバムが新しくできる。古いアルバムは手で消す。タグを使うときは、古いタグを `PRUNE=1` のときだけ消す（`イベント/` の下の末端のタグに限る）
+- 使う Immich API（v2 から安定版のものだけ）
+
+| API | 権限 | 用途 |
+|---|---|---|
+| `GET /view/folder/unique-paths` | `folder.read` | 写真があるフォルダの一覧 |
+| `GET /view/folder?path=` | `folder.read` | フォルダ直下の写真 |
+| `GET /albums`、`POST /albums`、`PUT /albums/{id}/assets` | `album.read`、`album.create`、`albumAsset.create` | アルバムの一覧・作成・写真の追加（既定） |
+| `GET /tags`、`PUT /tags` | `tag.read`、`tag.create` | タグの一覧と作成（`MODE=tag` / `both` のとき） |
+| `PUT /tags/{id}/assets` | `tag.asset` | 写真にタグを付ける（`MODE=tag` / `both` のとき） |
+| `DELETE /tags/{id}` | `tag.delete` | 古いタグを消す（`MODE=tag` / `both` で `PRUNE=1` のとき） |
+| `GET /libraries` | `library.read` | 外部ライブラリの ID を探す（見張りモード、`LIBRARY_ID` が空のとき。管理者だけ） |
+| `POST /libraries/{id}/scan` | `library.update` | スキャンを頼む（見張りモード。管理者だけ） |
+| `GET /queues/library`、`GET /jobs` | `queue.read`、`job.read` | スキャンの終わりを待つ（見張りモード。管理者だけ） |
+
+- API キー: 外部ライブラリの所有者のアカウントで、上の権限だけを付けて作る。`tagger.env`（権限 600）にだけ置き、Git には入れない
+- AWS は使わない（追加料金なし）
+- セットアップ手順: [導入手順 5. イベントのアルバム](setup-event-tagger.md)
 
 ## 9. 廃止した構成要素 {#removed}
 
@@ -180,4 +219,4 @@ sudo umount /mnt/nas/thumbnails   # /etc/fstab の thumbnails の行も消す
 - NAS の SMB バージョン（`vers=2.0` で試す）
 - バックアップ失敗時の通知方法（メール、LINE など）
 - Immich の DB の自動ダンプ（`/srv/immich/library/backups/`）を NAS や S3 にも送るか（S3 に送る場合は少額だが追加料金がかかるため、送る前に確認する）
-- ラズパイのメモリ（4GB / 8GB）と、機械学習を有効にするかどうか
+- ラズパイのメモリ（4GB / 8GB）。機械学習は Windows PC に任せることにした（[導入手順 4](setup-remote-ml.md)）。常時動かしたくなったら、Intel N100 系ミニPC（OpenVINO 対応）への置き換えを検討する

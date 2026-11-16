@@ -65,6 +65,7 @@ docker exec immich_server ls -a /data/thumbs      # .immich ができていれ�
     - フォルダ: `/mnt/media/photos`（コンテナ内のパスを書く。`/mnt/nas/photos` ではない）
 3. 「スキャン」を押す。初回は写真の枚数に応じて数時間〜1日かかる（Pi4 でサムネイル生成は 1 枚あたり 1 秒前後が目安）
 4. 「アカウント設定」→「機能」で「フォルダ」を有効にすると、`年/MMDD_イベント` の並びで見られる
+5. イベントフォルダごとにアルバムを作りたい場合は [導入手順 5. イベントのアルバム](setup-event-tagger.md) に進む
 
 新しい写真は 6 時間ごとの自動スキャンで取り込まれる。すぐに見たいときは「外部ライブラリ」でスキャンを押す。
 
@@ -74,7 +75,7 @@ docker exec immich_server ls -a /data/thumbs      # .immich ができていれ�
 - 家の外から見る場合は下の「外部アクセス（Tailscale）」を参照
 - アプリの「バックアップ」（スマホからの自動アップロード）を使うと、写真は NAS ではなくラズパイの `/srv/immich/library` に入り、S3 にもバックアップされない。写真は今まで通り PC から NAS に保存する
 
-## 7. 外部アクセス（Tailscale）
+## 7. 外部アクセス（Tailscale） {#tailscale}
 
 ルーターのポートは開けず、[Tailscale](https://tailscale.com/)（個人利用は無料）で自分の端末からだけつなぐ。
 
@@ -94,7 +95,8 @@ tailscale ip -4                   # 100.x.y.z が割り当てられる
 |---|---|
 | `${PHOTOS_LOCATION}:/mnt/media/photos:ro` を追加 | NAS の元写真を読み取り専用（末尾の `:ro` = read-only）で外部ライブラリにする。Immich の画面から削除しても元写真は消えない |
 | `${THUMB_LOCATION}:/data/thumbs` を追加 | サムネイルを NAS の `Thumbnail` 共有に置き、ラズパイのディスクを節約する（Immich 公式の「カスタムの保存場所」の方法） |
-| 機械学習コンテナを `profiles: ['ml']` に入れた | Pi4 では顔認識・スマート検索が重いので既定では起動しない |
+| 機械学習コンテナを `profiles: ['ml']` に入れた | Pi4 では顔認識・スマート検索が重いので起動しない。機械学習は Windows PC で動かす（[導入手順 4](setup-remote-ml.md)） |
+| `extra_hosts` に `host.docker.internal:host-gateway` を追加 | コンテナからラズパイ本体の機械学習の中継（[導入手順 4](setup-remote-ml.md)）を呼ぶため |
 | `IMMICH_CONFIG_FILE` で `immich-config.json` を読む | 設定を Git で管理する。この設定は画面から変更できなくなる |
 | `DB_STORAGE_TYPE` を `.env` で切り替え | SSD 以外に DB を置く場合の性能対策 |
 
@@ -102,14 +104,19 @@ tailscale ip -4                   # 100.x.y.z が割り当てられる
 
 | 設定 | 値 | 理由 |
 |---|---|---|
-| `machineLearning.enabled` | `false` | 機械学習コンテナを動かさないため |
-| `library.scan.cronExpression` | `0 */6 * * *` | 6 時間ごとに NAS を再スキャン（既定は 1 日 1 回） |
+| `machineLearning.enabled` | `true` | 顔検出・スマート検索を使う |
+| `machineLearning.urls` | `http://host.docker.internal:3101`, `:3102` | 機械学習は Windows PC のコンテナで動かし、止まっているときは Mac が予備で処理する。ラズパイ本体の中継（`immich/ml-relay/`）が `.env` の PC の名前につなぐので、固定 IP は不要（[導入手順 4](setup-remote-ml.md)）。ラズパイの機械学習コンテナは起動しない |
+| `library.scan.cronExpression` | `0 */6 * * *` | 6 時間ごとに NAS を再スキャン（既定は 1 日 1 回）。変えたら [イベントのアルバム](setup-event-tagger.md) の timer の時刻も合わせる |
 | `library.watch.enabled` | `false` | ネットワーク共有ではファイル監視が動かないため |
 | `job.*.concurrency` | 1〜2 | Pi4 の CPU とメモリに合わせて既定より減らす |
 
 書かなかった項目は Immich の既定値になる。設定を変えたら `docker compose up -d --force-recreate immich-server` で反映する。
 
-## 機械学習を有効にする（任意、8GB モデル向け）
+## 機械学習を有効にする（任意）
+
+おすすめは、機械学習だけを家の Windows PC で動かす方法。手順は [導入手順 4. 機械学習を Windows PC で動かす](setup-remote-ml.md) を参照。
+
+ラズパイ自体で動かす場合（8GB モデル向け、かなり遅い）は次のとおり。`immich-config.json` の `machineLearning.urls` は `["http://immich-machine-learning:3003"]` にする。
 
 1. `immich-config.json` の `machineLearning.enabled` を `true` にする
 2. `docker compose --profile ml up -d`
@@ -121,6 +128,8 @@ tailscale ip -4                   # 100.x.y.z が割り当てられる
 cd /opt/nas-photo-backup && git pull
 cd immich && docker compose pull && docker compose up -d
 ```
+
+Windows PC で機械学習コンテナを動かしている場合は、PC 側も同じバージョンに更新する（[導入手順 4 の「更新」](setup-remote-ml.md#update)）。
 
 更新前に [リリースノート](https://github.com/immich-app/immich/releases) で「Breaking changes」を確認する。メジャー更新（v3 → v4 など）は `.env` の `IMMICH_VERSION` を変えるまで入らない。
 

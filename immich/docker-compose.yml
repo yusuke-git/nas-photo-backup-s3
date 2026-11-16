@@ -5,6 +5,7 @@
 #   - サムネイル（/data/thumbs）を NAS の Thumbnail 共有に置く
 #   - 機械学習コンテナは profile "ml" に入れ、既定では起動しない
 #   - サーバー設定を immich-config.json で管理する（Git に残すため）
+#   - 機械学習を Windows PC / Mac に任せるため、ラズパイ本体の中継を host.docker.internal で呼べるようにする
 # Immich を更新するときは、新しいリリースの公式ファイルと見比べてから反映すること。
 
 name: immich
@@ -26,6 +27,9 @@ services:
       - .env
     environment:
       IMMICH_CONFIG_FILE: /config/immich-config.json
+    # 機械学習は Windows PC / Mac で動かす。ラズパイ本体の中継（immich/ml-relay/）を host.docker.internal で呼ぶ
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     ports:
       - '2283:2283'
     depends_on:

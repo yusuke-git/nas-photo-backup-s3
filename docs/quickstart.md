@@ -54,6 +54,9 @@ bash setup/3-pi-immich.sh
 
 終わったら表示された `http://<ラズパイのIP>:2283` を開いて管理者を作り、「管理」→「外部ライブラリ」でフォルダ `/mnt/media/photos` を登録してスキャンする。
 
+顔認識・スマート検索を使う場合は、機械学習を Windows PC（予備に Mac）で動かす。PC 側は [導入手順 4](setup-remote-ml.md) の 1 を手で行い、ラズパイ側は `setup/3-pi-immich.sh` の `ML_PRIMARY_HOST` / `ML_BACKUP_HOST` に PC の名前（`desktop-abc123.local` など）を書いて実行する。固定 IP は不要。
+イベントフォルダごとのアルバム（`261003_運動会` など）を自動で作りたい場合は、スキャンが終わってから [導入手順 5. イベントのアルバム](setup-event-tagger.md) を手で行う（Immich の画面で API キーを作る必要があるため、スクリプトには入れていない）。
+
 ## もう一度実行したとき
 
 - どのスクリプトも、作成済みのファイル（`/etc/nas-credentials`、`rclone.conf`、`backup.env`、`.env`、`/etc/fstab` の行）は上書きしない。やり直したいときは、そのファイル（fstab は該当行）を消してから実行する

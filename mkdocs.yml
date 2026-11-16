@@ -23,6 +23,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          paths: [immich/tagger]
           options:
             docstring_style: google
             show_source: true
@@ -53,9 +54,12 @@ nav:
       - 1. AWS（Terraform）: setup-aws.md
       - 2. バックアップ: setup-backup.md
       - 3. Immich: setup-immich.md
+      - 4. 機械学習を Windows PC で動かす: setup-remote-ml.md
+      - 5. イベントのアルバム: setup-event-tagger.md
   - 仕組みの解説:
       - Terraform（infra/）: infra.md
       - backup.sh: backup-script.md
+      - event_tagger（コードリファレンス）: reference/event_tagger.md
   - 運用:
       - 料金の見張りと設定変更: operations.md
       - セキュリティ点検: security.md

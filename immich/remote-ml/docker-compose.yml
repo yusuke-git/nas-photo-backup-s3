@@ -1,0 +1,42 @@
+# Windows PC（Docker Desktop）で Immich の機械学習コンテナだけを動かす構成。
+# ラズパイの Immich から http://<PCのIP>:3003 で呼ばれ、顔検出・スマート検索・OCR の処理を肩代わりする。
+# 公式の「Remote Machine Learning」の構成（https://docs.immich.app/guides/remote-machine-learning）を元にしている。
+# 手順は docs/setup-remote-ml.md を参照。
+#
+# 注意: 機械学習コンテナには認証がない。家の LAN の中だけで使い、ルーターのポートは開けないこと。
+
+name: immich_remote_ml
+
+services:
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    # ラズパイ側（immich/example.env）の IMMICH_VERSION と必ずそろえる。ずれると不具合の原因になる
+    # GPU を使う場合は .env の ML_ACCEL に -cuda（NVIDIA）または -openvino（Intel）を入れ、下のブロックも有効にする
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-v3}${ML_ACCEL:-}
+    volumes:
+      # ダウンロードしたモデル（数百MB〜1GB 程度）の置き場所。消しても再ダウンロードされるだけ
+      - model-cache:/cache
+      # Intel の内蔵 GPU を使う場合（ML_ACCEL=-openvino）は次の行のコメントも外す
+      # - /usr/lib/wsl:/usr/lib/wsl
+    ports:
+      - '3003:3003'
+    restart: unless-stopped
+    healthcheck:
+      disable: false
+
+    # --- NVIDIA の GPU を使う場合（ML_ACCEL=-cuda）: 次の 8 行のコメントを外す ---
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities:
+    #             - gpu
+
+    # --- Intel の内蔵 GPU を使う場合（ML_ACCEL=-openvino）: 次の 2 行と、上の volumes の 1 行のコメントを外す ---
+    # devices:
+    #   - /dev/dxg:/dev/dxg
+
+volumes:
+  model-cache:

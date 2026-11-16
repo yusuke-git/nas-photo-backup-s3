@@ -1,6 +1,10 @@
 {
   "machineLearning": {
-    "enabled": false
+    "enabled": true,
+    "urls": [
+      "http://host.docker.internal:3101",
+      "http://host.docker.internal:3102"
+    ]
   },
   "library": {
     "scan": {

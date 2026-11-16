@@ -1,0 +1,20 @@
+# /etc/systemd/system/immich-ml-relay@.service に置く（setup/3-pi-immich.sh が @REPO_DIR@ を置き換えて入れる）。
+# immich-ml-relay@primary（Windows PC 向け）と immich-ml-relay@backup（Mac 向け）の 2 つを動かす。
+# 中身は immich/ml-relay/ml-relay.sh を参照。
+[Unit]
+Description=Immich の機械学習への中継 (%i)
+After=docker.service avahi-daemon.service network-online.target
+Wants=network-online.target
+BindsTo=docker.service
+
+[Service]
+ExecStart=@REPO_DIR@/immich/ml-relay/ml-relay.sh %i
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Immich のイベントアルバム作成を、外部ライブラリの自動スキャンの 30 分後に実行（1 日 4 回）
+
+[Timer]
+# 自動スキャンは immich-config.json の library.scan.cronExpression（0 */6 * * * = 0 時・6 時・12 時・18 時）。
+# スキャンの時刻を変えたら、ここも合わせて変える
+OnCalendar=*-*-* 00,06,12,18:30:00
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

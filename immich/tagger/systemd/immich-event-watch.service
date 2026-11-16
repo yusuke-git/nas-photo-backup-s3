@@ -1,0 +1,18 @@
+[Unit]
+Description=NAS の写真フォルダを見張り、変化があれば Immich にスキャンを頼んでアルバムに入れる
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+# NAS がマウントされてから動かす（マウントされていない間はログに警告を出して待つ）
+RequiresMountsFor=/mnt/nas/photos
+
+[Service]
+Type=simple
+User=pi
+EnvironmentFile=/etc/immich-event-tagger/tagger.env
+ExecStart=/usr/bin/python3 /opt/nas-photo-backup/immich/tagger/event_tagger.py --watch
+Restart=on-failure
+RestartSec=30
+Nice=10
+
+[Install]
+WantedBy=multi-user.target
