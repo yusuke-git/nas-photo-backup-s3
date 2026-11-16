@@ -11,12 +11,12 @@ services:
   immich-machine-learning:
     container_name: immich_machine_learning
     # ラズパイ側（immich/example.env）の IMMICH_VERSION と必ずそろえる。ずれると不具合の原因になる
-    # GPU を使う場合は .env の ML_ACCEL に -cuda（NVIDIA）または -openvino（Intel）を入れ、下のブロックも有効にする
+    # イメージ名の末尾に .env の ML_ACCEL がそのまま付く（空なら CPU 版、-cuda なら NVIDIA 版、-openvino なら Intel 版）
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-v3}${ML_ACCEL:-}
     volumes:
       # ダウンロードしたモデル（数百MB〜1GB 程度）の置き場所。消しても再ダウンロードされるだけ
       - model-cache:/cache
-      # Intel の内蔵 GPU を使う場合（ML_ACCEL=-openvino）は次の行のコメントも外す
+      # 【Intel】次の 1 行の行頭の "# " を外す
       # - /usr/lib/wsl:/usr/lib/wsl
     ports:
       - '3003:3003'
@@ -24,7 +24,13 @@ services:
     healthcheck:
       disable: false
 
-    # --- NVIDIA の GPU を使う場合（ML_ACCEL=-cuda）: 次の 8 行のコメントを外す ---
+    # ===== GPU を使う場合 =====
+    # CPU で動かすなら、このファイルは編集しない。
+    # GPU を使うときは、.env の ML_ACCEL を書いたうえで、使う GPU の印（【NVIDIA】か【Intel】）が
+    # 付いた行だけ、行頭の "# "（シャープと空白 1 つ）を外す。字下げはそのまま残す。
+    # 両方を同時に外さないこと。
+
+    # 【NVIDIA】.env は ML_ACCEL=-cuda。次の 8 行の行頭の "# " を外す
     # deploy:
     #   resources:
     #     reservations:
@@ -34,7 +40,7 @@ services:
     #           capabilities:
     #             - gpu
 
-    # --- Intel の内蔵 GPU を使う場合（ML_ACCEL=-openvino）: 次の 2 行と、上の volumes の 1 行のコメントを外す ---
+    # 【Intel】.env は ML_ACCEL=-openvino。次の 2 行と、上の volumes の【Intel】の 1 行の行頭の "# " を外す
     # devices:
     #   - /dev/dxg:/dev/dxg
 

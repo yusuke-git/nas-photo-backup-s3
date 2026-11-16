@@ -37,6 +37,11 @@ sudo usermod -aG docker "$(id -un)"   # 次のログインから sudo なしで 
 step "2/5 置き場所と .env"
 sudo mkdir -p "$IMMICH_DATA/library" "$IMMICH_DATA/postgres"
 if [ -f "$IMMICH_DIR/.env" ]; then
+  # sudo で作った .env は root の持ち物になり、このスクリプト（普段のユーザー）から読み書きできない
+  if [ ! -r "$IMMICH_DIR/.env" ] || [ ! -w "$IMMICH_DIR/.env" ]; then
+    die ".env を読み書きできません（持ち主が root になっていませんか）。次を実行してから、もう一度このスクリプトを実行してください:
+  sudo chown $(id -un):$(id -gn) $IMMICH_DIR/.env"
+  fi
   echo ".env はすでにあるのでそのまま使います"
 else
   ( umask 077

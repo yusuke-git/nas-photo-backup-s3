@@ -42,7 +42,54 @@ docker compose up -d
 docker compose logs -f            # "Application startup complete" が出れば起動済み（Ctrl+C で抜ける）
 ```
 
-GPU を使う場合は、`.env` の `ML_ACCEL` に `-cuda`（NVIDIA）か `-openvino`（Intel）を入れ、`docker-compose.yml` の該当ブロックのコメントを外してから `docker compose up -d` する。NVIDIA の場合は Windows 側に最新のドライバーが入っていれば WSL 2 から使える。
+CPU で動かすなら `.env` は `example.env` をコピーしたままでよい（`ML_ACCEL=` は `=` の後ろを空のままにする）。`.env` で使われるのは `IMMICH_VERSION` と `ML_ACCEL` の 2 つだけ。
+
+### GPU を使う（任意） {#gpu}
+
+GPU を使うときは、**`.env` と `docker-compose.yml` の 2 か所** を変える。片方だけでは GPU は使われない。
+
+| 使う GPU | ① `.env` に書く値 | ② `docker-compose.yml` で行頭の `# ` を外す行 |
+|---|---|---|
+| なし（CPU） | `ML_ACCEL=`（空のまま） | なし（編集しない） |
+| NVIDIA（GeForce など） | `ML_ACCEL=-cuda` | 【NVIDIA】の印の下の 8 行（`deploy:` から `- gpu` まで） |
+| Intel の内蔵 GPU / Arc | `ML_ACCEL=-openvino` | 【Intel】の印の下の 2 行（`devices:` と `- /dev/dxg:/dev/dxg`）と、`volumes:` の中の【Intel】の 1 行（`- /usr/lib/wsl:/usr/lib/wsl`） |
+
+外すのは行頭の `# `（シャープと空白 1 つ）だけで、字下げは残す。たとえば NVIDIA の場合、外したあとはこうなる（`deploy:` は上の `healthcheck:` と同じ字下げになる）。
+
+```
+    healthcheck:
+      disable: false
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+```
+
+Intel の場合は次のようになる。
+
+```
+    volumes:
+      - model-cache:/cache
+      - /usr/lib/wsl:/usr/lib/wsl
+    （中略）
+    devices:
+      - /dev/dxg:/dev/dxg
+```
+
+書き換えたら、反映して確かめる。
+
+```
+docker compose config             # エラーが出なければ書き方は合っている（字下げがずれているとここで分かる）
+docker compose up -d              # GPU 用のイメージに入れ替わる（初回は数 GB のダウンロード）
+docker compose ps                 # IMAGE の末尾が -cuda または -openvino になっていること
+```
+
+ジョブの実行中に、タスクマネージャーの「パフォーマンス」で GPU の使用率が上がっていれば GPU で動いている。NVIDIA は Windows 側に最新のドライバーが入っていれば WSL 2 から使える。CPU に戻すときは 2 か所を元に戻して `docker compose up -d`。
 
 ### Mac でも起動する（予備）
 
