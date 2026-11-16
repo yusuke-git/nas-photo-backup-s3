@@ -11,7 +11,7 @@
 | 日付 | 内容 |
 |---|---|
 | 2026-10-31 | `terraform apply` で15リソースを作成（変更・削除なし）。バケット `example-nas-photo-backup`（`ap-southeast-2`、`get-bucket-location` で確認）、ユーザー `nas-backup`、予算 `nas-photo-backup-monthly`（月5ドル、Budget Action は STANDBY）、異常検知 `nas-photo-backup-anomaly`。Terraform v1.16.6、AWS プロバイダ v5.100.0。state は管理用 PC の `infra/terraform.tfstate`。アカウント全体の予算 `account-monthly-alert` は Terraform 管理外（手作業） |
-| 2026-11-02 | `terraform apply` でバケットのバージョニングを有効化（1追加、1変更、削除なし）。変更は `nas-backup` ユーザーのタグ削除（コンソールでアクセスキーを作ったときの説明「nas-pi」。キーと権限は変わらない）。`aws_iam_role_policy.budget_action` は plan で再計算と表示されたが、中身が同じため変更なし。state の場所は管理用 PC の 管理用 PC の決まったフォルダの `infra`（ほかの clone には state がないので、そこで plan しない） |
+| 2026-11-02 | `terraform apply` でバケットのバージョニングを有効化（1追加、1変更、削除なし）。変更は `nas-backup` ユーザーのタグ削除（コンソールでアクセスキーを作ったときの説明「nas-pi」。キーと権限は変わらない）。`aws_iam_role_policy.budget_action` は plan で再計算と表示されたが、中身が同じため変更なし。state の場所は管理用 PC の決まったフォルダの `infra`（ほかの clone には state がないので、そこで plan しない） |
 
 ## Agent Toolkit for AWS（2026-10-31） {#agent-toolkit}
 
